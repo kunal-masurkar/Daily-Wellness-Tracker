@@ -107,10 +107,9 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
   // Helper score status styling
   const getScoreStatus = (score) => {
     if (score === null || score === undefined) return { label: 'No Data', color: 'var(--text-muted)' };
-    if (score >= 80) return { label: 'Optimal', color: '#0000A3' };
-    if (score >= 60) return { label: 'Good', color: '#0000A3' };
-    if (score >= 40) return { label: 'Fair', color: 'var(--accent-amber)' };
-    return { label: 'Needs Attention', color: 'var(--accent-rose)' };
+    if (score < 40) return { label: 'Needs Attention', color: 'var(--accent-rose)' };
+    if (score <= 70) return { label: 'Fair', color: 'var(--accent-amber)' };
+    return { label: 'Optimal', color: '#16a34a' };
   };
 
   const todayScoreStatus = getScoreStatus(todayCheckin ? todayCheckin.wellness_score : null);
