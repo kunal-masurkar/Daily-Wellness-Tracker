@@ -38,7 +38,6 @@ const stmtUpsertCheckin = db.prepare(`
     energy = excluded.energy,
     wellness_score = excluded.wellness_score,
     updated_at = CURRENT_TIMESTAMP
-  RETURNING *
 `);
 
 const stmtGetTodayCheckin = db.prepare(`
@@ -93,7 +92,7 @@ router.post('/', (req, res, next) => {
     const checkinId = crypto.randomUUID();
 
     // Execute atomic upsert query scoped to session userId
-    const updatedRecord = stmtUpsertCheckin.get(
+    stmtUpsertCheckin.run(
       checkinId,
       userId,
       date,
@@ -102,6 +101,8 @@ router.post('/', (req, res, next) => {
       energy,
       wellness_score
     );
+
+    const updatedRecord = stmtGetTodayCheckin.get(userId, date);
 
     return res.status(200).json({
       message: 'Check-in saved successfully',
