@@ -37,7 +37,6 @@ The Vite React application will start on `http://localhost:5173`.
 
 ## Edge Cases Handled
 - **Future Dates Rejected**: Backend Zod & date validation rejects check-in attempts for future dates.
-- **Data Validation & Sanitization**: Sleep hours (0-24), mood (1-10), and energy (1-10) are strictly validated with Zod. Malformed or out-of-range inputs return clear error responses.
 - **Data Validation & Sanitization**: Sleep hours (0-24), mood (1-5), and energy (1-5) are strictly validated with Zod. Malformed or out-of-range inputs return clear error responses.
 - **Atomic Upserts**: Duplicate check-in submissions for the same date overwrite existing entries atomically using SQL `ON CONFLICT(user_id, date) DO UPDATE`, preventing duplicate rows.
 - **Timezone Safety**: Dates are client-supplied (`?date=YYYY-MM-DD`), preventing discrepancies when users check in near midnight in different time zones.
@@ -49,6 +48,14 @@ The Vite React application will start on `http://localhost:5173`.
 - **Rate Limiting**: Stricter rate limits (5 requests per 5 mins) are enforced on the login endpoint.
 - **Session Security**: Cookies are configured with `httpOnly`, `sameSite: 'lax'`, and `secure` in production.
 - **Server Downtime Graceful Recovery**: Frontend gracefully displays connection error banners if the server is unreachable instead of crashing or showing blank screens.
+
+## Error Codes
+- **400 Bad Request**: Invalid date format, malformed payload, out-of-range sleep hours/mood/energy, or future-date submission.
+- **401 Unauthorized**: Missing or invalid session for protected routes, or failed login credentials.
+- **409 Conflict**: Signup email already exists.
+- **429 Too Many Requests**: Login rate limit exceeded.
+- **500 Internal Server Error**: Unexpected backend failure.
+- **0 Network Error**: Frontend request could not reach the backend at all; shown as a connection error banner.
 
 ---
 

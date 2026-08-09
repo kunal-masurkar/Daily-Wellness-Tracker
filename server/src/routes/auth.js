@@ -18,7 +18,23 @@ const authLimiter = rateLimit({
 
 const authSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }).transform((value) => value.trim().toLowerCase()),
-  password: z.string().min(10, { message: 'Password must be at least 10 characters long' })
+  password: z
+  .string()
+  .min(10, {
+    message: 'Password must be at least 10 characters long'
+  })
+  .regex(/[A-Z]/, {
+    message: 'Password must contain at least one uppercase letter'
+  })
+  .regex(/[a-z]/, {
+    message: 'Password must contain at least one lowercase letter'
+  })
+  .regex(/[0-9]/, {
+    message: 'Password must contain at least one number'
+  })
+  .regex(/[^A-Za-z0-9]/, {
+    message: 'Password must contain at least one special character'
+  })
 });
 
 const stmtGetUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
