@@ -105,47 +105,6 @@ Daily-Wellness-Tracker/
 
 ---
 
-## Deploying on Render
-
-This app is easiest to deploy as a single Render **Web Service** for the backend plus built frontend assets, because the client currently calls `/api` with a relative base path.
-
-### Required configuration
-
-- **Node version**: Use Node 18 or newer.
-- **Session secret**: Set `SESSION_SECRET` to a long random value in Render.
-- **CORS origin**: Set `CORS_ORIGIN` to `https://daily-wellness-tracker-frontend.onrender.com`.
-- **SQLite file path**: Set `DATABASE_PATH` to a persistent mounted disk path such as `/var/data/wellness.db`.
-- **Persistent disk**: Attach a Render Disk if you want check-ins and users to survive restarts. The default ephemeral filesystem will lose the SQLite file when the service redeploys.
-
-### Render service settings
-
-1. Create a new **Web Service** from this GitHub repo.
-2. Set the **Root Directory** to `server` if the backend is the service entrypoint.
-3. Use the backend install command `npm install`.
-4. Use the backend build command only if you add one; otherwise leave it empty.
-5. Use the start command `npm start`.
-6. Add environment variables:
-   - `NODE_ENV=production`
-   - `SESSION_SECRET=<strong-random-secret>`
-   - `CORS_ORIGIN=https://daily-wellness-tracker-frontend.onrender.com`
-   - `DATABASE_PATH=/var/data/wellness.db` if you mount a disk there
-
-### Frontend deployment options
-
-1. **Recommended**: serve the built client from the backend so the browser and API share one origin.
-   - Build the client with `npm run build` inside `client`.
-   - Serve the generated `client/dist` folder from the backend.
-   - Keep the client API calls on `/api`.
-2. **Alternative**: deploy the client as a separate Render static site.
-   - Set `VITE_API_BASE_URL` in the client environment to `https://daily-wellness-tracker.onrender.com/api`.
-   - The client now reads that variable in `client/src/api.js`, and falls back to `/api` for local development.
-
-### Important caveat
-
-Keep the backend Render service root set to `server` so it runs the server package and the new `src/index.js` entrypoint.
-
----
-
 ## API Endpoints Reference
 
 ### Authentication Routes (`/api/auth`)
