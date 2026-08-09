@@ -28,7 +28,10 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
     return `${year}-${month}-${day}`;
   };
 
+  const todayStr = getTodayStr();
+
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
+  const [datePickerValue, setDatePickerValue] = useState(getTodayStr());
   const [sleepHours, setSleepHours] = useState(7.5);
   const [mood, setMood] = useState(3);
   const [energy, setEnergy] = useState(3);
@@ -82,6 +85,29 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
   useEffect(() => {
     fetchData(selectedDate);
   }, [selectedDate]);
+
+  useEffect(() => {
+    setDatePickerValue(selectedDate);
+  }, [selectedDate]);
+
+  const handleGoToDate = () => {
+    if (!datePickerValue) {
+      return;
+    }
+
+    if (datePickerValue > todayStr) {
+      showToast('Future dates are not allowed. Please choose today or an earlier date.', 'error');
+      setDatePickerValue(todayStr);
+      return;
+    }
+
+    setSelectedDate(datePickerValue);
+  };
+
+  const handleGoToday = () => {
+    setDatePickerValue(todayStr);
+    setSelectedDate(todayStr);
+  };
 
   const handleSaveCheckin = async (e) => {
     e.preventDefault();
@@ -209,7 +235,7 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
                 className="form-control"
                 style={{ paddingLeft: '1rem' }}
                 value={selectedDate}
-                max={getTodayStr()}
+                max={todayStr}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
             </div>
@@ -298,10 +324,44 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
 
         {/* 7-Day Trend Section */}
         <div className="card trend-section">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Activity size={20} style={{ color: 'var(--primary-green)' }} />
-            7-Day Wellness Trend
-          </h3>
+          <div className="trend-header-row">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity size={20} style={{ color: 'var(--primary-green)' }} />
+              7-Day Wellness Trend
+            </h3>
+
+            <div className="trend-jump-controls">
+              <div className="trend-jump-field">
+                <label htmlFor="trend-go-date">Go to date</label>
+                <input
+                  id="trend-go-date"
+                  type="date"
+                  className="form-control trend-date-input"
+                  value={datePickerValue}
+                  max={todayStr}
+                  onChange={(e) => {
+                    const nextValue = e.target.value;
+                    if (nextValue && nextValue > todayStr) {
+                      showToast('Future dates are not allowed.', 'error');
+                      setDatePickerValue(todayStr);
+                      return;
+                    }
+
+                    setDatePickerValue(nextValue);
+                  }}
+                />
+              </div>
+
+              <div className="trend-action-buttons">
+                <button type="button" className="btn-secondary" onClick={handleGoToDate}>
+                  Go to Date
+                </button>
+                <button type="button" className="btn-secondary" onClick={handleGoToday}>
+                  Today
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="trend-grid">
             {trendData.map((item) => {

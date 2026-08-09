@@ -433,6 +433,66 @@ h1, h2, h3, h4, h5, h6 {
   grid-column: 1 / -1;
 }
 
+.trend-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.trend-header-row h3 {
+  margin: 0;
+}
+
+.trend-jump-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.trend-jump-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.trend-jump-field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--dark-gray);
+}
+
+.trend-date-input {
+  min-width: 180px;
+  padding-left: 1rem !important;
+}
+
+.trend-action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  padding: 0.75rem 1rem;
+  background: var(--light-gray);
+  color: var(--charcoal-black);
+  border: 1px solid var(--soft-gray-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  background: #ececec;
+  border-color: #d8d8d8;
+}
+
 .trend-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -665,6 +725,32 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 0.35rem;
   }
 
+  .trend-header-row {
+    align-items: stretch;
+  }
+
+  .trend-jump-controls {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .trend-jump-field {
+    width: 100%;
+  }
+
+  .trend-date-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .trend-action-buttons {
+    width: 100%;
+  }
+
+  .trend-action-buttons .btn-secondary {
+    flex: 1 1 0;
+  }
+
   .trend-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
@@ -731,6 +817,14 @@ h1, h2, h3, h4, h5, h6 {
   .trend-grid {
     grid-template-columns: 1fr;
     gap: 0.6rem;
+  }
+
+  .trend-action-buttons {
+    flex-direction: column;
+  }
+
+  .trend-action-buttons .btn-secondary {
+    width: 100%;
   }
 
   .trend-score-badge {
