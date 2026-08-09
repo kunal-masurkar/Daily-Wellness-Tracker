@@ -72,16 +72,17 @@ h1, h2, h3, h4, h5, h6 {
   padding: 1.5rem 1rem;
 }
 
-/* Header Bar (Blinkit Yellow Header) */
+/* Header Bar (Light Blue #E6E6FF Header) */
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.8rem;
-  background-color: var(--header-yellow);
+  background-color: #E6E6FF;
   border-radius: var(--radius-lg);
   margin-bottom: 2rem;
-  box-shadow: 0 4px 14px rgba(248, 203, 70, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 14px rgba(230, 230, 255, 0.6);
 }
 
 .brand {
@@ -185,8 +186,8 @@ h1, h2, h3, h4, h5, h6 {
 .auth-card {
   width: 100%;
   max-width: 440px;
-  background: var(--bg-card);
-  border: 1px solid var(--soft-gray-border);
+  background-color: #E6E6FF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--radius-lg);
   padding: 2.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
