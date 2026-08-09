@@ -10,20 +10,27 @@ const router = express.Router();
 // Apply requireAuth middleware to all check-in endpoints
 router.use(requireAuth);
 
+function getLocalDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Zod validation schemas
 const checkinSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date must be in YYYY-MM-DD format' }),
-  sleep_hours: z.number({ invalid_type_error: 'Sleep hours must be a number' })
+  sleepHours: z.coerce.number({ invalid_type_error: 'Sleep hours must be a number' })
     .min(0, { message: 'Sleep hours cannot be negative' })
     .max(24, { message: 'Sleep hours cannot exceed 24' }),
-  mood: z.number({ invalid_type_error: 'Mood must be a number' })
+  mood: z.coerce.number({ invalid_type_error: 'Mood must be a number' })
     .int({ message: 'Mood must be an integer' })
-    .min(1, { message: 'Mood must be between 1 and 10' })
-    .max(10, { message: 'Mood must be between 1 and 10' }),
-  energy: z.number({ invalid_type_error: 'Energy must be a number' })
+    .min(1, { message: 'Mood must be between 1 and 5' })
+    .max(5, { message: 'Mood must be between 1 and 5' }),
+  energy: z.coerce.number({ invalid_type_error: 'Energy must be a number' })
     .int({ message: 'Energy must be an integer' })
-    .min(1, { message: 'Energy must be between 1 and 10' })
-    .max(10, { message: 'Energy must be between 1 and 10' })
+    .min(1, { message: 'Energy must be between 1 and 5' })
+    .max(5, { message: 'Energy must be between 1 and 5' })
 });
 
 const dateQuerySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Invalid date format' });
@@ -55,12 +62,13 @@ const stmtGetRangeCheckins = db.prepare(`
  */
 function get7DayDateRange(targetDateStr) {
   const dates = [];
-  const targetDate = new Date(`${targetDateStr}T00:00:00Z`);
+  const [year, month, day] = targetDateStr.split('-').map(Number);
+  const targetDate = new Date(year, month - 1, day);
 
-  for (let i = 6; i >= 0; i--) {
+  for (let i = 0; i < 7; i++) {
     const d = new Date(targetDate);
-    d.setUTCDate(d.getUTCDate() - i);
-    dates.push(d.toISOString().split('T')[0]);
+    d.setDate(d.getDate() - i);
+    dates.push(getLocalDateString(d));
   }
   return dates;
 }
@@ -71,23 +79,26 @@ function get7DayDateRange(targetDateStr) {
  */
 router.post('/', (req, res, next) => {
   try {
-    const parseResult = checkinSchema.safeParse(req.body);
+    const incomingBody = {
+      ...req.body,
+      sleepHours: req.body.sleepHours ?? req.body.sleep_hours
+    };
+    const parseResult = checkinSchema.safeParse(incomingBody);
     if (!parseResult.success) {
       const firstError = parseResult.error.errors[0]?.message || 'Invalid input data';
       return res.status(400).json({ error: firstError });
     }
 
-    const { date, sleep_hours, mood, energy } = parseResult.data;
+    const { date, sleepHours, mood, energy } = parseResult.data;
 
-    // Reject future dates based on server date + 1 day threshold
-    const now = new Date();
-    const maxAllowedDateStr = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    if (date > maxAllowedDateStr) {
+    // Reject dates strictly after today's local date
+    const todayStr = getLocalDateString();
+    if (date > todayStr) {
       return res.status(400).json({ error: 'Cannot record check-in for a future date' });
     }
 
     // Calculate wellness score using pure score function
-    const wellness_score = calculateWellnessScore(sleep_hours, mood, energy);
+    const wellness_score = calculateWellnessScore(sleepHours, mood, energy);
     const userId = req.session.userId;
     const checkinId = crypto.randomUUID();
 
@@ -96,7 +107,7 @@ router.post('/', (req, res, next) => {
       checkinId,
       userId,
       date,
-      sleep_hours,
+      sleepHours,
       mood,
       energy,
       wellness_score
@@ -125,7 +136,7 @@ router.get('/today', (req, res, next) => {
     }
 
     if (!targetDate) {
-      targetDate = new Date().toISOString().split('T')[0];
+      targetDate = getLocalDateString();
     }
 
     const userId = req.session.userId;
@@ -149,11 +160,11 @@ router.get('/last7days', (req, res, next) => {
     }
 
     if (!endDate) {
-      endDate = new Date().toISOString().split('T')[0];
+      endDate = getLocalDateString();
     }
 
     const dateRange = get7DayDateRange(endDate);
-    const startDate = dateRange[0];
+    const startDate = dateRange[dateRange.length - 1];
     const userId = req.session.userId;
 
     // Fetch existing records in date range

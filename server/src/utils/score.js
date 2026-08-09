@@ -2,21 +2,25 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function calculateSleepScore(sleepHours) {
-  const target = 8;
-  const maxDistance = 8;
-  const distance = Math.abs(clamp(sleepHours, 0, 24) - target);
-  return clamp(100 - (distance / maxDistance) * 100, 0, 100);
-}
+function getSleepFactor(sleepHours) {
+  const value = clamp(Number(sleepHours), 0, 24);
 
-function calculateScaleScore(value) {
-  return clamp((clamp(value, 1, 10) - 1) / 9 * 100, 0, 100);
+  if (value >= 7 && value <= 9) {
+    return 1.0;
+  }
+
+  if ((value >= 6 && value < 7) || (value > 9 && value <= 10)) {
+    return 0.7;
+  }
+
+  return 0.4;
 }
 
 export function calculateWellnessScore(sleepHours, mood, energy) {
-  const sleepScore = calculateSleepScore(sleepHours);
-  const moodScore = calculateScaleScore(mood);
-  const energyScore = calculateScaleScore(energy);
+  const sleepFactor = getSleepFactor(sleepHours);
+  const moodValue = clamp(Number(mood), 1, 5);
+  const energyValue = clamp(Number(energy), 1, 5);
+  const rawScore = (sleepFactor * 40) + (moodValue * 6) + (energyValue * 6);
 
-  return Math.round((sleepScore * 0.4 + moodScore * 0.3 + energyScore * 0.3) * 100) / 100;
+  return clamp(Math.round(rawScore), 0, 100);
 }

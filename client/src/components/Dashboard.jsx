@@ -4,27 +4,34 @@ import { api } from '../api.js';
 
 // Client-side pure score preview calculation
 function calculateLocalScore(sleep, mood, energy) {
-  let sleepScore = 0;
-  if (sleep >= 7 && sleep <= 9) {
-    sleepScore = 100;
-  } else if (sleep < 7) {
-    sleepScore = Math.max(0, (sleep / 7) * 100);
-  } else {
-    sleepScore = Math.max(0, 100 - (sleep - 9) * 12.5);
+  const sleepValue = Number(sleep);
+  let sleepFactor = 0.4;
+
+  if (sleepValue >= 7 && sleepValue <= 9) {
+    sleepFactor = 1.0;
+  } else if ((sleepValue >= 6 && sleepValue < 7) || (sleepValue > 9 && sleepValue <= 10)) {
+    sleepFactor = 0.7;
   }
-  const moodScore = Math.min(100, Math.max(0, mood * 10));
-  const energyScore = Math.min(100, Math.max(0, energy * 10));
-  const score = (sleepScore * 0.40) + (moodScore * 0.30) + (energyScore * 0.30);
-  return Math.round(score * 10) / 10;
+
+  const moodValue = Math.min(5, Math.max(1, Number(mood)));
+  const energyValue = Math.min(5, Math.max(1, Number(energy)));
+  const score = (sleepFactor * 40) + (moodValue * 6) + (energyValue * 6);
+  return Math.min(100, Math.max(0, Math.round(score)));
 }
 
 export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
-  const getTodayStr = () => new Date().toISOString().split('T')[0];
+  const getTodayStr = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
   const [sleepHours, setSleepHours] = useState(7.5);
-  const [mood, setMood] = useState(7);
-  const [energy, setEnergy] = useState(7);
+  const [mood, setMood] = useState(3);
+  const [energy, setEnergy] = useState(3);
   
   const [todayCheckin, setTodayCheckin] = useState(null);
   const [trendData, setTrendData] = useState([]);
@@ -83,7 +90,7 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
 
     const payload = {
       date: selectedDate,
-      sleep_hours: Number(sleepHours),
+      sleepHours: Number(sleepHours),
       mood: Number(mood),
       energy: Number(energy)
     };
@@ -176,8 +183,8 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
           {todayCheckin ? (
             <div style={{ marginTop: '1.2rem', display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--dark-gray)', fontWeight: 600 }}>
               <span><Moon size={14} style={{ color: 'var(--primary-green)' }} /> {todayCheckin.sleep_hours}h</span>
-              <span><Smile size={14} style={{ color: 'var(--primary-green)' }} /> Mood {todayCheckin.mood}/10</span>
-              <span><Zap size={14} style={{ color: 'var(--accent-amber)' }} /> Energy {todayCheckin.energy}/10</span>
+              <span><Smile size={14} style={{ color: 'var(--primary-green)' }} /> Mood {todayCheckin.mood}/5</span>
+              <span><Zap size={14} style={{ color: 'var(--accent-amber)' }} /> Energy {todayCheckin.energy}/5</span>
             </div>
           ) : (
             <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -235,13 +242,13 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
                   <Smile size={18} style={{ color: 'var(--primary-green)' }} />
                   Mood Rating
                 </span>
-                <span className="slider-value-display">{mood} / 10</span>
+                <span className="slider-value-display">{mood} / 5</span>
               </div>
               <input
                 type="range"
                 className="range-input"
                 min="1"
-                max="10"
+                max="5"
                 step="1"
                 value={mood}
                 onChange={(e) => setMood(parseInt(e.target.value))}
@@ -256,13 +263,13 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
                   <Zap size={18} style={{ color: 'var(--accent-amber)' }} />
                   Energy Level
                 </span>
-                <span className="slider-value-display">{energy} / 10</span>
+                <span className="slider-value-display">{energy} / 5</span>
               </div>
               <input
                 type="range"
                 className="range-input"
                 min="1"
-                max="10"
+                max="5"
                 step="1"
                 value={energy}
                 onChange={(e) => setEnergy(parseInt(e.target.value))}
@@ -300,7 +307,7 @@ export function Dashboard({ user, onLogout, showToast, onUnauthorized }) {
             {trendData.map((item) => {
               const status = getScoreStatus(item.wellness_score);
               const isSelected = item.date === selectedDate;
-              const formattedDate = new Date(`${item.date}T00:00:00Z`).toLocaleDateString('en-US', {
+              const formattedDate = new Date(`${item.date}T00:00:00`).toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'numeric',
                 day: 'numeric'

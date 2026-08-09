@@ -9,10 +9,10 @@ A modern, full-stack Daily Wellness Check-In web application built with **React*
 - 🔒 **Secure Authentication**: Password hashing with `bcryptjs` (cost factor 10), server-side session management (`express-session` with SQLite store), `httpOnly` cookies, rate limiting, account lockout after 5 failed login attempts, and generic error messages against user enumeration.
 - 🛡️ **Per-User Data Isolation**: Every database operation strictly scopes queries to `req.session.userId`, preventing unauthorized cross-user data access.
 - ⚡ **Atomic SQL Upserts**: Daily check-ins use `INSERT ... ON CONFLICT(user_id, date) DO UPDATE` to atomically record or update daily stats without creating duplicate records.
-- 📊 **Real-Time Score Calculation**: Pure function calculating daily wellness scores (0–100) based on weighted metrics:
-  - **Sleep Hours** (40% weight, optimal 7–9h window)
-  - **Mood Rating** (30% weight, 1–10 scale)
-  - **Energy Level** (30% weight, 1–10 scale)
+- 📊 **Real-Time Score Calculation**: Pure function calculating daily wellness scores (0–100) using the assignment formula:
+   - `wellnessScore = round((sleepFactor × 40) + (mood × 6) + (energy × 6))`
+   - **Sleep Hours** contribute through `sleepFactor` with the exact PDF ranges
+   - **Mood Rating** and **Energy Level** use the 1–5 scale
 - 📈 **7-Day Trend Analysis**: Interactive 7-day visual history cards displaying recorded scores and clear dash (`-`) representations for missing days.
 - 🌐 **Timezone-Safe Dates**: Client-supplied date strings (`YYYY-MM-DD`) ensure accurate check-ins across timezones and reject future dates.
 
@@ -120,7 +120,7 @@ Daily-Wellness-Tracker/
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/api/checkin` | Atomic upsert checkin (`date`, `sleep_hours`, `mood`, `energy`) | Yes |
+| `POST` | `/api/checkin` | Atomic upsert checkin (`date`, `sleepHours`, `mood`, `energy`) | Yes |
 | `GET` | `/api/checkin/today` | Fetch checkin for today or target `?date=YYYY-MM-DD` | Yes |
 | `GET` | `/api/checkin/last7days` | Fetch 7-day trend history ending on `?date=YYYY-MM-DD` | Yes |
 
@@ -131,7 +131,7 @@ Daily-Wellness-Tracker/
 - **BCrypt Hashing**: Passwords are hashed with `bcryptjs` (salt cost factor 10) prior to insertion into SQLite. Plaintext passwords are never stored or logged.
 - **Account Lockout**: After 5 consecutive failed login attempts, the user's account is locked out for 15 minutes (`locked_until`).
 - **Generic Error Responses**: Failed logins return an identical `"Invalid email or password"` message to prevent account enumeration.
-- **Strict Input Validation**: Zod schemas sanitize and validate types, ranges, and formats for email, passwords, sleep hours (0-24), mood (1-10), energy (1-10), and dates.
+- **Strict Input Validation**: Zod schemas sanitize and validate types, ranges, and formats for email, passwords, sleep hours (0-24), mood (1-5), energy (1-5), and dates.
 - **CORS & Cookies**: Configured with `credentials: true` and `httpOnly: true`, `sameSite: 'lax'`, and `secure` in production.
 
 ---

@@ -38,8 +38,10 @@ The Vite React application will start on `http://localhost:5173`.
 ## Edge Cases Handled
 - **Future Dates Rejected**: Backend Zod & date validation rejects check-in attempts for future dates.
 - **Data Validation & Sanitization**: Sleep hours (0-24), mood (1-10), and energy (1-10) are strictly validated with Zod. Malformed or out-of-range inputs return clear error responses.
+- **Data Validation & Sanitization**: Sleep hours (0-24), mood (1-5), and energy (1-5) are strictly validated with Zod. Malformed or out-of-range inputs return clear error responses.
 - **Atomic Upserts**: Duplicate check-in submissions for the same date overwrite existing entries atomically using SQL `ON CONFLICT(user_id, date) DO UPDATE`, preventing duplicate rows.
 - **Timezone Safety**: Dates are client-supplied (`?date=YYYY-MM-DD`), preventing discrepancies when users check in near midnight in different time zones.
+- **Day Definition**: Local device date is used consistently for "today" in both frontend and backend.
 - **7-Day History Gap Representation**: Missing days in the 7-day trend array are rendered as dashes (`-`) with `null` values instead of being treated as `0`.
 - **Per-User Isolation**: Every database query filters strictly by `req.session.userId`, enforcing total data isolation between users.
 - **Generic Auth Errors**: Login failures return a unified "Invalid email or password" response to prevent user enumeration attacks.
