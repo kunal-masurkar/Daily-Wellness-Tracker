@@ -59,15 +59,3 @@ The Vite React application will start on `http://localhost:5173`.
 
 ## AI Usage Disclosure
 - AI assistance was used for initial architectural planning, refining security middleware configurations, crafting pure score calculation functions, and optimizing glassmorphism CSS layout components.
-
----
-
-## 10-Hour Build Trade-Offs & Future Enhancements
-Due to time constraints for this demo-level build, the following simplifications were made:
-- **No CAPTCHA**: In a production environment, Cloudflare Turnstile would be integrated on login/signup to mitigate automated bot registrations and credential stuffing.
-- **No Multi-Factor Authentication (MFA)**: Would add TOTP-based MFA (`otplib` + `qrcode`) for elevated account protection.
-- **No Email Verification / Password Reset**: Self-serve password resets and email verification flows would be added using a transactional email service (e.g. Resend or SendGrid).
-- **Single-Instance Session Store**: SQLite-backed session storage is ideal for single-instance deployments. Scaling across multiple backend nodes would require a centralized store like Redis.
-- **Render Ephemeral Storage**: On free-tier cloud hosting without persistent disks, the SQLite file resets upon redeployment. A persistent disk attachment (~$1/mo) would provide long-term persistence.
-- **Audit Logging**: Would introduce structured event logging for authentication failures, lockouts, and rate limit triggers.
-- **Automated Test Suite**: Integration tests (using Jest or Supertest) for the auth flow and check-in endpoints would be added for continuous verification.
