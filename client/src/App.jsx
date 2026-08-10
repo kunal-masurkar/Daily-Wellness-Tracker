@@ -8,6 +8,7 @@ export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [toast, setToast] = useState(null);
 
+  // Centralized toast helper for success and error messages.
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => {
@@ -15,7 +16,7 @@ export default function App() {
     }, 4000);
   };
 
-  // Check active session on initial app load
+  // Restore the session once when the app starts.
   useEffect(() => {
     async function checkAuthSession() {
       const res = await api.me();
@@ -29,12 +30,14 @@ export default function App() {
     checkAuthSession();
   }, []);
 
+  // Log out on the server, then clear local user state.
   const handleLogout = async () => {
     await api.logout();
     setUser(null);
     showToast('Logged out successfully', 'success');
   };
 
+  // Keep the initial loading state until the auth check finishes.
   if (isInitializing) {
     return (
       <div style={{

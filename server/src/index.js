@@ -19,8 +19,10 @@ if (isProduction && !sessionSecret) {
   throw new Error('SESSION_SECRET is required in production');
 }
 
+// Trust the Render proxy so secure cookies and client IPs behave correctly.
 app.set('trust proxy', 1);
 
+// Set up the API stack: security headers, JSON parsing, CORS, sessions, and rate limiting.
 app.use(helmet({
   contentSecurityPolicy: false
 }));
@@ -49,22 +51,27 @@ app.use(rateLimit({
   legacyHeaders: false
 }));
 
+// Lightweight health check for deployment probes and manual checks.
 app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
 
+// Mount the auth and wellness check-in API routes.
 app.use('/api/auth', authRouter);
 app.use('/api/checkin', checkinRouter);
 
+// Return a clear JSON response for unknown routes.
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// Keep unexpected server errors from leaking stack traces to the client.
 app.use((error, req, res, next) => {
   console.error(error);
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Start the API server.
 app.listen(port, () => {
   console.log(`Daily Wellness server listening on port ${port}`);
 });

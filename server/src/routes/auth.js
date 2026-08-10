@@ -8,6 +8,7 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Rate limit login attempts to slow brute-force attacks.
 const authLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   limit: 5,
@@ -16,6 +17,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many login attempts. Please try again later.' }
 });
 
+// Validate auth payloads and enforce the stronger password policy.
 const authSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }).transform((value) => value.trim().toLowerCase()),
   password: z
@@ -37,6 +39,7 @@ const authSchema = z.object({
   })
 });
 
+// Prepared statements keep user lookups and writes consistent and parameterized.
 const stmtGetUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
 const stmtGetUserById = db.prepare('SELECT id, email FROM users WHERE id = ?');
 const stmtInsertUser = db.prepare(`
@@ -58,6 +61,7 @@ const stmtIncrementFailure = db.prepare(`
   WHERE id = ?
 `);
 
+    // Return only non-sensitive user fields to the client.
 function getSafeUser(userRow) {
   if (!userRow) {
     return null;
@@ -69,6 +73,7 @@ function getSafeUser(userRow) {
   };
 }
 
+// Create a new account, start a session, and return the public user profile.
 router.post('/signup', async (req, res, next) => {
   try {
     const parseResult = authSchema.safeParse(req.body);
@@ -102,6 +107,7 @@ router.post('/signup', async (req, res, next) => {
   }
 });
 
+// Authenticate the user, reset lockout state, and attach the session cookie.
 router.post('/login', authLimiter, async (req, res, next) => {
   try {
     const parseResult = authSchema.safeParse(req.body);
@@ -140,6 +146,7 @@ router.post('/login', authLimiter, async (req, res, next) => {
   }
 });
 
+// Destroy the active session and clear the auth cookie.
 router.post('/logout', (req, res, next) => {
   const clearSession = () => {
     res.clearCookie('wellness.sid');
@@ -160,6 +167,7 @@ router.post('/logout', (req, res, next) => {
   });
 });
 
+// Return the currently logged-in user for session restore on page load.
 router.get('/me', requireAuth, (req, res, next) => {
   try {
     const user = stmtGetUserById.get(req.session.userId);
