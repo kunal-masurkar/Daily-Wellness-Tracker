@@ -19,11 +19,34 @@ export function AuthForms({ onAuthSuccess, showToast }) {
       return;
     }
 
-    if (!isLoginMode && password.length < 10) {
-      setError('Password must be at least 10 characters long');
-      return;
-    }
+    // Signup-only password requirements
+    if (!isLoginMode) {
+      if (password.length < 10) {
+        setError('Password must be at least 10 characters long');
+        return;
+      }
 
+      if (!/[A-Z]/.test(password)) {
+        setError('Password must contain at least one uppercase letter');
+        return;
+      }
+
+      if (!/[a-z]/.test(password)) {
+        setError('Password must contain at least one lowercase letter');
+        return;
+      }
+
+      if (!/[0-9]/.test(password)) {
+        setError('Password must contain at least one number');
+        return;
+      }
+
+      if (!/[^A-Za-z0-9]/.test(password)) {
+        setError('Password must contain at least one special character');
+        return;
+      }
+    }
+  
     setIsLoading(true);
 
     const response = isLoginMode 
@@ -94,8 +117,24 @@ export function AuthForms({ onAuthSuccess, showToast }) {
               />
             </div>
             {!isLoginMode && (
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.3rem', display: 'block' }}>
-                Must be at least 10 characters long
+              <small
+                style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '0.78rem',
+                  marginTop: '0.3rem',
+                  display: 'block',
+                  lineHeight: '1.5'
+                }}
+              >
+                Password must contain at least 10 characters, including:
+                <br />
+                • One uppercase letter (A-Z)
+                <br />
+                • One lowercase letter (a-z)
+                <br />
+                • One number (0-9)
+                <br />
+                • One special character (e.g. @, #, $, !)
               </small>
             )}
           </div>
