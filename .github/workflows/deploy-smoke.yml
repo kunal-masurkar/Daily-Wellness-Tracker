@@ -1,0 +1,37 @@
+name: Deploy Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Deployed backend base URL, for example https://your-app.onrender.com'
+        required: true
+        type: string
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Check deployed health endpoint
+        run: curl -fsS "${{ inputs.base_url }}/health"
+
+      - name: Run deployed API smoke test
+        working-directory: server
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+        run: npm run test:api
