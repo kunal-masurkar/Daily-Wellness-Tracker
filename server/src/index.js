@@ -20,7 +20,7 @@ if (isProduction && !sessionSecret) {
 }
 
 // Trust the Render proxy so secure cookies and client IPs behave correctly.
-app.set('trust proxy', 0);
+app.set('trust proxy', 1);
 
 // Set up the API stack: security headers, JSON parsing, CORS, sessions, and rate limiting.
 app.use(helmet({
