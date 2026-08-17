@@ -1,7 +1,9 @@
-const BASE = 'http://localhost:5000/api';
+const baseUrl = (process.env.BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+const BASE = `${baseUrl}/api`;
 
 async function testApi() {
   console.log('--- Testing Daily Wellness API ---');
+  console.log('Base URL:', baseUrl);
   let cookie = '';
 
   // 1. Signup

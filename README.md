@@ -145,6 +145,20 @@ node test_api.js
 ```
 The script validates user registration, session authentication, atomic check-in upserts, 7-day trend calculations, future date rejection, and logout.
 
+## CI/CD Practice Flow
+
+This repo now supports a simple CI practice loop:
+
+1. Push code and let GitHub Actions run the workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+2. The workflow installs both apps, builds the client, starts the server, checks `/health`, and runs the API smoke test.
+3. To test a deployed environment, run the manual smoke workflow in [`.github/workflows/deploy-smoke.yml`](.github/workflows/deploy-smoke.yml) or point the smoke test at your deployed server:
+   ```bash
+   cd server
+   BASE_URL=https://your-deployment-url npm run test:api
+   ```
+
+Because the same smoke test works locally and against a deployment, you can reuse one check for both CI and release verification.
+
 ---
 
 ## License
